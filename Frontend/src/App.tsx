@@ -1,172 +1,86 @@
-import { useState, useCallback } from 'react'
-import { Header } from './components/Header'
-import { Toolbar } from './components/Toolbar'
-import { Canvas } from './components/Canvas'
-import { Sidebar } from './components/Sidebar'
-import { PropertiesPanel } from './components/PropertiesPanel'
-import { useWebSocket } from './hooks/useWebSocket'
-import { Shape, Tool, User } from './types'
-import './App.css'
+import { useEffect, useState } from 'react';
+import './App.css';
+import { CollaborativeCanvas } from './components/CollaborativeCanvas.tsx';
+import { initProvider } from './store/collaborativeStore';
 
 function App() {
-  const [currentTool, setCurrentTool] = useState<Tool>('select')
-  const [fillColor, setFillColor] = useState('#3498db')
-  const [strokeColor, setStrokeColor] = useState('#2c3e50')
-  const [shapes, setShapes] = useState<Shape[]>([])
-  const [selectedShape, setSelectedShape] = useState<Shape | null>(null)
-  const [username, setUsername] = useState('User')
-  const [users, setUsers] = useState<Map<string, User>>(new Map())
+  const [username, setUsername] = useState(localStorage.getItem('username') || 'Anonymous');
+  const [roomName, setRoomName] = useState('default-room');
+  const [connected, setConnected] = useState(false);
 
-  const { isConnected, sendMessage, userId } = useWebSocket({
-    onMessage: useCallback((data: any) => {
-      switch (data.action) {
-        case 'add':
-          setShapes((prev) => {
-            if (prev.find((s) => s.id === data.shape.id)) {
-              return prev
-            }
-            return [...prev, data.shape]
-          })
-          break
-        case 'update':
-          setShapes((prev) =>
-            prev.map((s) => (s.id === data.shape.id ? { ...s, ...data.shape } : s))
-          )
-          break
-        case 'delete':
-          setShapes((prev) => prev.filter((s) => s.id !== data.shape.id))
-          setSelectedShape(null)
-          break
-        case 'clear':
-          setShapes([])
-          setSelectedShape(null)
-          break
-        case 'sync':
-          setShapes(data.shapes || [])
-          setUsers(new Map(Object.entries(data.users || {})))
-          break
-        case 'user_update':
-          setUsers((prev) => {
-            const newUsers = new Map(prev)
-            newUsers.set(data.userId, { id: data.userId, name: data.username })
-            return newUsers
-          })
-          break
-        case 'user_left':
-          setUsers((prev) => {
-            const newUsers = new Map(prev)
-            newUsers.delete(data.userId)
-            return newUsers
-          })
-          break
-      }
-    }, []),
-    username,
-  })
+  useEffect(() => {
+    if (connected) {
+      // Use SignalR hub URL instead of WebSocket
+      const provider = initProvider(roomName, 'http://localhost:5000/yjsHub');
+      
+      provider.on('status', (event: any) => {
+        console.log('SignalR status:', event.status);
+      });
 
-  const handleAddShape = useCallback((shape: Shape) => {
-    setShapes((prev) => [...prev, shape])
-    sendMessage({
-      action: 'add',
-      shape,
-      userId,
-      username,
-      timestamp: Date.now(),
-    })
-  }, [sendMessage, userId, username])
+      // Cleanup on page unload/close
+      const handleBeforeUnload = () => {
+        provider.destroy();
+      };
+      
+      window.addEventListener('beforeunload', handleBeforeUnload);
 
-  const handleUpdateShape = useCallback((shape: Shape) => {
-    setShapes((prev) => prev.map((s) => (s.id === shape.id ? shape : s)))
-    sendMessage({
-      action: 'update',
-      shape,
-      userId,
-      username,
-      timestamp: Date.now(),
-    })
-  }, [sendMessage, userId, username])
-
-  const handleDeleteShape = useCallback(() => {
-    if (selectedShape) {
-      setShapes((prev) => prev.filter((s) => s.id !== selectedShape.id))
-      sendMessage({
-        action: 'delete',
-        shape: selectedShape,
-        userId,
-        username,
-        timestamp: Date.now(),
-      })
-      setSelectedShape(null)
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        provider.destroy();
+      };
     }
-  }, [selectedShape, sendMessage, userId, username])
+  }, [connected, roomName]);
 
-  const handleClearAll = useCallback(() => {
-    if (window.confirm('Are you sure you want to clear all shapes?')) {
-      setShapes([])
-      setSelectedShape(null)
-      sendMessage({
-        action: 'clear',
-        userId,
-        username,
-        timestamp: Date.now(),
-      })
-    }
-  }, [sendMessage, userId, username])
+  useEffect(() => {
+    localStorage.setItem('username', username);
+  }, [username]);
 
-  const handleUsernameChange = useCallback((newUsername: string) => {
-    setUsername(newUsername)
-    sendMessage({
-      action: 'user_update',
-      userId,
-      username: newUsername,
-      timestamp: Date.now(),
-    })
-  }, [sendMessage, userId])
+  if (!connected) {
+    return (
+      <div className="connection-screen">
+        <div className="connection-dialog">
+          <h1>Collaborative Diagram Editor</h1>
+          <p>Real-time collaboration with CRDT (Yjs) and React Flow</p>
+          
+          <div className="form-group">
+            <label htmlFor="username">Your Name:</label>
+            <input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Enter your name"
+            />
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="room">Room Name:</label>
+            <input
+              id="room"
+              type="text"
+              value={roomName}
+              onChange={(e) => setRoomName(e.target.value)}
+              placeholder="Enter room name"
+            />
+          </div>
+          
+          <button
+            className="connect-btn"
+            onClick={() => setConnected(true)}
+            disabled={!username.trim() || !roomName.trim()}
+          >
+            Join Room
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="app-container">
-      <Header
-        username={username}
-        onUsernameChange={handleUsernameChange}
-        isConnected={isConnected}
-      />
-      <Toolbar
-        currentTool={currentTool}
-        onToolChange={setCurrentTool}
-        fillColor={fillColor}
-        strokeColor={strokeColor}
-        onFillColorChange={setFillColor}
-        onStrokeColorChange={setStrokeColor}
-        onDelete={handleDeleteShape}
-        onClear={handleClearAll}
-      />
-      <div className="main-content">
-        <Sidebar
-          users={users}
-          currentUserId={userId}
-          currentUsername={username}
-          shapes={shapes}
-          selectedShape={selectedShape}
-          onShapeSelect={setSelectedShape}
-        />
-        <Canvas
-          currentTool={currentTool}
-          fillColor={fillColor}
-          strokeColor={strokeColor}
-          shapes={shapes}
-          selectedShape={selectedShape}
-          userId={userId}
-          onAddShape={handleAddShape}
-          onUpdateShape={handleUpdateShape}
-          onSelectShape={setSelectedShape}
-        />
-        <PropertiesPanel
-          selectedShape={selectedShape}
-          onUpdateShape={handleUpdateShape}
-        />
-      </div>
+    <div className="app">
+      <CollaborativeCanvas />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

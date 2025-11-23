@@ -1,0 +1,143 @@
+.tools-panel {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tool-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tool-btn {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tool-btn:hover {
+  border-color: #1a73e8;
+  background: #f0f7ff;
+}
+
+.tool-btn.active {
+  border-color: #1a73e8;
+  background: #1a73e8;
+  color: white;
+}
+
+.tool-btn.delete-btn {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.tool-btn.delete-btn:hover:not(:disabled) {
+  border-color: #dc3545;
+  background: #dc3545;
+  color: white;
+}
+
+.tool-btn.delete-btn:disabled {
+  border-color: #e0e0e0;
+  color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.tool-btn.delete-btn:disabled:hover {
+  background: white;
+  border-color: #e0e0e0;
+}
+
+.color-pickers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.color-pickers label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.color-pickers input[type="color"] {
+  width: 40px;
+  height: 28px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.users-panel {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 180px;
+}
+
+.users-panel h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+}
+
+.user-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.remote-cursor {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+}
+
+/* React Flow customizations */
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__node.selected {
+  box-shadow: 0 0 0 2px #1a73e8 !important;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #1a73e8 !important;
+  stroke-width: 3;
+}

@@ -7,16 +7,20 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add SignalR
-builder.Services.AddSignalR();
+// Add SignalR with configuration for binary data
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+    options.MaximumReceiveMessageSize = 1024 * 1024; // 1MB max message size
+});
 
-// Add CORS
+// Add CORS - must be permissive for SignalR
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder
-            .WithOrigins("http://localhost:3000", "http://localhost:5173")
+        policy
+            .SetIsOriginAllowed(_ => true) // Allow any origin in development
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
@@ -32,14 +36,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// CORS must be called before UseAuthorization and endpoints
+// Middleware order is critical for CORS with SignalR:
+// UseRouting() -> UseCors() -> UseAuthorization() -> Endpoints
+app.UseRouting();
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Map SignalR hub
-app.MapHub<DiagramHub>("/diagramHub");
+// Map SignalR hubs with CORS
+app.MapHub<DiagramHub>("/diagramHub").RequireCors("AllowAll");  // Old hub (kept for backward compatibility)
+app.MapHub<YjsHub>("/yjsHub").RequireCors("AllowAll");           // New Yjs CRDT hub (dumb pipe)
 
 app.Run();

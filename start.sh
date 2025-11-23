@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Start Backend Server
-echo "Starting Backend Server..."
+# Start .NET Backend with SignalR (CRDT sync)
+echo "Starting .NET Backend with SignalR YjsHub..."
 cd Backend
 dotnet run &
 BACKEND_PID=$!
@@ -16,11 +16,18 @@ npm run dev &
 FRONTEND_PID=$!
 
 echo ""
-echo "=================================="
+echo "========================================="
 echo "Application is running!"
-echo "Backend:  http://localhost:5000"
-echo "Frontend: http://localhost:3000"
-echo "=================================="
+echo "Backend:    http://localhost:5000"
+echo "SignalR Hub: /yjsHub"
+echo "Frontend:   http://localhost:3000"
+echo "========================================="
+echo ""
+echo "Architecture: Thick Client, Dumb Pipe"
+echo "- All CRDT logic handled client-side (Yjs)"
+echo "- SignalR hub just relays binary messages"
+echo "- .NET backend provides scalable relay"
+echo "========================================="
 echo ""
 echo "Press Ctrl+C to stop all services"
 
