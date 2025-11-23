@@ -111,12 +111,6 @@ function CollaborativeCanvasInner() {
   const onNodeClick = useCallback((event: any, node: any) => {
     event.stopPropagation();
     setSelectedNodeId(node.id);
-    
-    // Update awareness to show who is editing
-    const provider = getProvider();
-    if (provider) {
-      provider.awareness.setLocalStateField('selectedNode', node.id);
-    }
   }, [setSelectedNodeId]);
 
   // Handle connection between nodes

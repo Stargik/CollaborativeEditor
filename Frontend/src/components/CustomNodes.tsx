@@ -100,25 +100,6 @@ export const RectangleNode = memo(({ data, selected, id }: NodeProps) => {
           {data.text || 'Double click to edit'}
         </div>
       )}
-      
-      {data.editingUser && (
-        <div
-          style={{
-            position: 'absolute',
-            top: -25,
-            left: 0,
-            backgroundColor: data.editingUser.color,
-            color: '#fff',
-            padding: '2px 6px',
-            borderRadius: '3px',
-            fontSize: '11px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {data.editingUser.name}
-        </div>
-      )}
     </div>
   );
 });
@@ -220,26 +201,6 @@ export const CircleNode = memo(({ data, selected, id }: NodeProps) => {
           {data.text || 'Double click to edit'}
         </div>
       )}
-      
-      {data.editingUser && (
-        <div
-          style={{
-            position: 'absolute',
-            top: -25,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            backgroundColor: data.editingUser.color,
-            color: '#fff',
-            padding: '2px 6px',
-            borderRadius: '3px',
-            fontSize: '11px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {data.editingUser.name}
-        </div>
-      )}
     </div>
   );
 });
@@ -323,25 +284,6 @@ export const TextNode = memo(({ data, selected, id }: NodeProps) => {
         <span style={{ cursor: 'text' }}>
           {data.text || 'Double click to edit'}
         </span>
-      )}
-      
-      {data.editingUser && (
-        <div
-          style={{
-            position: 'absolute',
-            top: -25,
-            left: 0,
-            backgroundColor: data.editingUser.color,
-            color: '#fff',
-            padding: '2px 6px',
-            borderRadius: '3px',
-            fontSize: '11px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {data.editingUser.name}
-        </div>
       )}
     </div>
   );

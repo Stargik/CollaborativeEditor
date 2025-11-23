@@ -8,8 +8,6 @@ export const ydoc = new Y.Doc();
 // Maps for shared state
 export const yNodes = ydoc.getMap('nodes');
 export const yEdges = ydoc.getMap('edges');
-export const yUsers = ydoc.getMap('users');
-export const yAwareness = ydoc.getMap('awareness');
 
 // SignalR provider for sync
 let provider: SignalRProvider | null = null;
@@ -46,10 +44,8 @@ function getRandomColor() {
 interface CollaborativeState {
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
-  isDrawing: boolean;
-  setIsDrawing: (drawing: boolean) => void;
-  currentTool: 'select' | 'rectangle' | 'circle' | 'line' | 'text';
-  setCurrentTool: (tool: 'select' | 'rectangle' | 'circle' | 'line' | 'text') => void;
+  currentTool: 'select' | 'rectangle' | 'circle' | 'text';
+  setCurrentTool: (tool: 'select' | 'rectangle' | 'circle' | 'text') => void;
   fillColor: string;
   setFillColor: (color: string) => void;
   strokeColor: string;
@@ -59,8 +55,6 @@ interface CollaborativeState {
 export const useCollaborativeStore = create<CollaborativeState>((set) => ({
   selectedNodeId: null,
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
-  isDrawing: false,
-  setIsDrawing: (drawing) => set({ isDrawing: drawing }),
   currentTool: 'select',
   setCurrentTool: (tool) => set({ currentTool: tool }),
   fillColor: '#3498db',

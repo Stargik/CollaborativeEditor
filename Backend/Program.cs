@@ -44,8 +44,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Map SignalR hubs with CORS
-app.MapHub<DiagramHub>("/diagramHub").RequireCors("AllowAll");  // Old hub (kept for backward compatibility)
-app.MapHub<YjsHub>("/yjsHub").RequireCors("AllowAll");           // New Yjs CRDT hub (dumb pipe)
+// Map SignalR hub with CORS
+app.MapHub<YjsHub>("/yjsHub").RequireCors("AllowAll");  // Yjs CRDT hub (dumb pipe)
 
 app.Run();
