@@ -50,6 +50,10 @@ interface CollaborativeState {
   setFillColor: (color: string) => void;
   strokeColor: string;
   setStrokeColor: (color: string) => void;
+  provider: SignalRProvider | null;
+  setProvider: (provider: SignalRProvider | null) => void;
+  roomName: string;
+  setRoomName: (name: string) => void;
 }
 
 export const useCollaborativeStore = create<CollaborativeState>((set) => ({
@@ -61,4 +65,8 @@ export const useCollaborativeStore = create<CollaborativeState>((set) => ({
   setFillColor: (color) => set({ fillColor: color }),
   strokeColor: '#2c3e50',
   setStrokeColor: (color) => set({ strokeColor: color }),
+  provider: null,
+  setProvider: (provider) => set({ provider }),
+  roomName: '',
+  setRoomName: (name) => set({ roomName: name }),
 }));

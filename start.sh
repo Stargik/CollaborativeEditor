@@ -18,7 +18,7 @@ FRONTEND_PID=$!
 echo ""
 echo "========================================="
 echo "Application is running!"
-echo "Backend:    http://localhost:5000"
+echo "Backend:    http://localhost:5078"
 echo "SignalR Hub: /yjsHub"
 echo "Frontend:   http://localhost:3000"
 echo "========================================="

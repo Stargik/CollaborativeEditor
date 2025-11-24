@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { CollaborativeCanvas } from './components/CollaborativeCanvas.tsx';
-import { initProvider } from './store/collaborativeStore';
+import { initProvider, useCollaborativeStore } from './store/collaborativeStore';
 
 function App() {
   const [username, setUsername] = useState(localStorage.getItem('username') || 'Anonymous');
   const [roomName, setRoomName] = useState('default-room');
   const [connected, setConnected] = useState(false);
+  
+  const setProvider = useCollaborativeStore((state) => state.setProvider);
+  const setStoreRoomName = useCollaborativeStore((state) => state.setRoomName);
 
   useEffect(() => {
     if (connected) {
       // Use SignalR hub URL instead of WebSocket
-      const provider = initProvider(roomName, 'http://localhost:5000/yjsHub');
+      const provider = initProvider(roomName, 'http://localhost:5078/yjsHub');
+      
+      // Store in Zustand for access in Menu and other components
+      setProvider(provider);
+      setStoreRoomName(roomName);
       
       provider.on('status', (event: any) => {
         console.log('SignalR status:', event.status);
@@ -27,9 +34,10 @@ function App() {
       return () => {
         window.removeEventListener('beforeunload', handleBeforeUnload);
         provider.destroy();
+        setProvider(null);
       };
     }
-  }, [connected, roomName]);
+  }, [connected, roomName, setProvider, setStoreRoomName]);
 
   useEffect(() => {
     localStorage.setItem('username', username);

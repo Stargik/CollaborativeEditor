@@ -9,7 +9,7 @@ import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 export class SignalRProvider {
   public doc: Y.Doc;
   public awareness: awarenessProtocol.Awareness;
-  private connection: HubConnection;
+  public connection: HubConnection;
   private roomName: string;
   private connected: boolean = false;
   constructor(serverUrl: string, roomName: string, doc: Y.Doc) {
@@ -25,13 +25,10 @@ export class SignalRProvider {
       })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) => {
-          // Exponential backoff: 0, 2, 10, 30 seconds
-          if (retryContext.elapsedMilliseconds < 60000) {
-            return Math.min(1000 * Math.pow(2, retryContext.previousRetryCount), 30000);
-          } else {
-            // Stop retrying after 1 minute
-            return null;
-          }
+          // Exponential backoff: 0, 2, 10, 30 seconds, then keep retrying every 30 seconds
+          const delay = Math.min(1000 * Math.pow(2, retryContext.previousRetryCount), 30000);
+          console.log(`Reconnection attempt ${retryContext.previousRetryCount + 1}, waiting ${delay}ms...`);
+          return delay; // Never return null - keep retrying indefinitely
         }
       })
       .configureLogging({
@@ -74,6 +71,27 @@ export class SignalRProvider {
       }
     });
 
+    // Handle persisted state load from server
+    this.connection.on('LoadPersistedState', (message: string) => {
+      try {
+        console.log('Received persisted state from server, length:', message.length);
+        
+        // Decode base64 string to Uint8Array
+        const binaryString = atob(message);
+        const uint8Array = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          uint8Array[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Apply the persisted state to the document with 'this' as origin
+        // This prevents re-broadcasting the persisted state
+        Y.applyUpdate(this.doc, uint8Array, this);
+        console.log('✓ Applied persisted state, size:', uint8Array.length);
+      } catch (error) {
+        console.error('Error loading persisted state:', error);
+      }
+    });
+
     // Handle awareness updates (cursors, user info, etc.)
     this.connection.on('ReceiveAwarenessUpdate', (awarenessData: string) => {
       const update = JSON.parse(awarenessData);
@@ -111,10 +129,26 @@ export class SignalRProvider {
       console.log('User left:', connectionId);
     });
 
+    // Handle reconnecting state
+    this.connection.onreconnecting((error) => {
+      console.log('⚠ Connection lost, attempting to reconnect...', error?.message || '');
+      this.connected = false;
+    });
+
     // Handle reconnection
-    this.connection.onreconnected(() => {
-      console.log('Reconnected to SignalR');
-      this.requestSync();
+    this.connection.onreconnected(async () => {
+      console.log('✓ Reconnected to SignalR - rejoining room...');
+      try {
+        // Rejoin the room to get persisted state and notify others
+        await this.connection.invoke('JoinRoom', this.roomName);
+        console.log(`✓ Rejoined room: ${this.roomName}`);
+        this.connected = true;
+        
+        // Request sync from other clients
+        this.requestSync();
+      } catch (error) {
+        console.error('Error rejoining room after reconnection:', error);
+      }
     });
 
     // Handle disconnection
@@ -234,6 +268,14 @@ export class SignalRProvider {
     } catch (error) {
       console.error('Error broadcasting awareness:', error);
     }
+  }
+
+  /**
+   * Get the full document state for saving
+   * Returns the complete Yjs document state as a Uint8Array
+   */
+  public getFullState(): Uint8Array {
+    return Y.encodeStateAsUpdate(this.doc);
   }
 
   public async destroy() {

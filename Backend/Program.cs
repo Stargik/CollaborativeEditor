@@ -1,6 +1,17 @@
 using CollaborativeEditor.Hubs;
+using CollaborativeEditor.Data;
+using CollaborativeEditor.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add SQLite database
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") 
+        ?? "Data Source=collaborative_editor.db"));
+
+// Add services
+builder.Services.AddSingleton<RoomStateService>();
 
 // Add services to the container
 builder.Services.AddControllers();

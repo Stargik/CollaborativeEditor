@@ -12,6 +12,7 @@ import 'reactflow/dist/style.css';
 import { RectangleNode, CircleNode, TextNode } from './CustomNodes';
 import { useYjsSync } from '../hooks/useYjsSync';
 import { useCollaborativeStore, getProvider } from '../store/collaborativeStore';
+import { Menu } from './Menu';
 import './CollaborativeCanvas.css';
 
 const nodeTypes = {
@@ -359,6 +360,7 @@ function CollaborativeCanvasInner() {
       </ReactFlow>
       
       {remoteCursors}
+      <Menu />
     </div>
   );
 }
