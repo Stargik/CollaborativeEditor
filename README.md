@@ -1,4 +1,4 @@
-# Collaborative Diagram Editor# Collaborative Diagram Editor# Collaborative Diagram Editor# Collaborative Diagram Editor
+# Collaborative Diagram Editor
 
 
 
@@ -14,7 +14,7 @@ This application enables multiple users to simultaneously create and edit diagra
 
 
 
-## Architecture## Architecture: "Thick Client, Dumb Pipe" with .NET SignalRA real-time collaborative diagram editor built with **React Flow** + **Yjs** (CRDT) for truly conflict-free collaboration.A real-time collaborative diagram editor built with React + TypeScript frontend and .NET backend with SignalR.
+## Architecture: "Thick Client, Dumb Pipe" with .NET SignalRA real-time collaborative diagram editor built with **React Flow** + **Yjs** (CRDT) for truly conflict-free collaboration.A real-time collaborative diagram editor built with React + TypeScript frontend and .NET backend with SignalR.
 
 
 
@@ -86,7 +86,9 @@ This application enables multiple users to simultaneously create and edit diagra
 
 - Node.js 16+ with npm
 
-# Install frontend dependencies## Features- **User Presence**: See who is currently editing
+# Install frontend dependencies
+
+## Features- **User Presence**: See who is currently editing
 
 ### Installation
 
