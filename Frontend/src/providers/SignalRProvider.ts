@@ -2,10 +2,6 @@ import * as Y from 'yjs';
 import * as awarenessProtocol from 'y-protocols/awareness';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 
-/**
- * SignalR provider for Yjs
- * Connects to .NET SignalR hub instead of WebSocket
- */
 export class SignalRProvider {
   public doc: Y.Doc;
   public awareness: awarenessProtocol.Awareness;
@@ -17,7 +13,7 @@ export class SignalRProvider {
     this.roomName = roomName;
     this.awareness = new awarenessProtocol.Awareness(doc);
 
-    // Build SignalR connection with retry policy
+
     this.connection = new HubConnectionBuilder()
       .withUrl(serverUrl, {
         withCredentials: false,
@@ -25,10 +21,10 @@ export class SignalRProvider {
       })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) => {
-          // Exponential backoff: 0, 2, 10, 30 seconds, then keep retrying every 30 seconds
+
           const delay = Math.min(1000 * Math.pow(2, retryContext.previousRetryCount), 30000);
           console.log(`Reconnection attempt ${retryContext.previousRetryCount + 1}, waiting ${delay}ms...`);
-          return delay; // Never return null - keep retrying indefinitely
+          return delay;
         }
       })
       .configureLogging({
@@ -43,16 +39,16 @@ export class SignalRProvider {
   }
 
   private setupEventHandlers() {
-    // Handle incoming Yjs sync messages from other clients
+
     this.connection.on('ReceiveSyncMessage', (message: string) => {
       try {
-        // Validate message before processing
+
         if (!message || message.length === 0) {
           console.log('Received empty sync message, skipping');
           return;
         }
         
-        // Decode base64 string to Uint8Array
+
         const binaryString = atob(message);
         if (binaryString.length === 0) {
           console.log('Decoded empty message, skipping');
@@ -71,20 +67,20 @@ export class SignalRProvider {
       }
     });
 
-    // Handle persisted state load from server
+
     this.connection.on('LoadPersistedState', (message: string) => {
       try {
         console.log('Received persisted state from server, length:', message.length);
         
-        // Decode base64 string to Uint8Array
+
         const binaryString = atob(message);
         const uint8Array = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
           uint8Array[i] = binaryString.charCodeAt(i);
         }
         
-        // Apply the persisted state to the document with 'this' as origin
-        // This prevents re-broadcasting the persisted state
+
+
         Y.applyUpdate(this.doc, uint8Array, this);
         console.log('✓ Applied persisted state, size:', uint8Array.length);
       } catch (error) {
@@ -92,7 +88,7 @@ export class SignalRProvider {
       }
     });
 
-    // Handle awareness updates (cursors, user info, etc.)
+
     this.connection.on('ReceiveAwarenessUpdate', (awarenessData: string) => {
       const update = JSON.parse(awarenessData);
       awarenessProtocol.applyAwarenessUpdate(
@@ -102,13 +98,13 @@ export class SignalRProvider {
       );
     });
 
-    // Handle user joined - send them our current state
+
     this.connection.on('UserJoined', (connectionId: string) => {
       console.log('User joined:', connectionId);
-      // Send our full document state to the new user only if we have data
+
       if (this.connected && this.doc.store.clients.size > 0) {
         try {
-          // Encode the entire document state
+
           const fullState = Y.encodeStateAsUpdate(this.doc);
           if (fullState && fullState.length > 0) {
             console.log('Sending full state to new user, size:', fullState.length);
@@ -124,50 +120,50 @@ export class SignalRProvider {
       }
     });
 
-    // Handle user left
+
     this.connection.on('UserLeft', (connectionId: string) => {
       console.log('User left:', connectionId);
     });
 
-    // Handle reconnecting state
+
     this.connection.onreconnecting((error) => {
       console.log('⚠ Connection lost, attempting to reconnect...', error?.message || '');
       this.connected = false;
     });
 
-    // Handle reconnection
+
     this.connection.onreconnected(async () => {
       console.log('✓ Reconnected to SignalR - rejoining room...');
       try {
-        // Rejoin the room to get persisted state and notify others
+
         await this.connection.invoke('JoinRoom', this.roomName);
         console.log(`✓ Rejoined room: ${this.roomName}`);
         this.connected = true;
         
-        // Request sync from other clients
+
         this.requestSync();
       } catch (error) {
         console.error('Error rejoining room after reconnection:', error);
       }
     });
 
-    // Handle disconnection
+
     this.connection.onclose(() => {
       console.log('Disconnected from SignalR');
       this.connected = false;
-      // Clear local awareness state on disconnect
+
       this.awareness.setLocalState(null);
     });
 
-    // Listen to local document changes and broadcast
+
     this.doc.on('update', (update: Uint8Array, origin: any) => {
-      // Don't broadcast updates that came from the network
+
       if (origin !== this) {
         this.broadcastUpdate(update);
       }
     });
 
-    // Listen to local awareness changes and broadcast
+
     this.awareness.on('update', ({ added, updated, removed }: any) => {
       const changedClients = added.concat(updated, removed);
       const update = awarenessProtocol.encodeAwarenessUpdate(this.awareness, changedClients);
@@ -181,13 +177,13 @@ export class SignalRProvider {
       await this.connection.start();
       console.log('✓ Connected to SignalR successfully');
       
-      // Join the room
+
       await this.connection.invoke('JoinRoom', this.roomName);
       console.log(`✓ Joined room: ${this.roomName}`);
       this.connected = true;
       
-      // Request sync from existing clients by sending our state vector
-      // This implements Yjs sync protocol - clients will respond with missing data
+
+
       this.requestSync();
     } catch (error: any) {
       console.error('✗ Error connecting to SignalR:', error);
@@ -197,7 +193,7 @@ export class SignalRProvider {
         url: error.url || 'unknown'
       });
       
-      // Retry after 5 seconds
+
       console.log('Retrying connection in 5 seconds...');
       setTimeout(() => this.connect(), 5000);
     }
@@ -208,7 +204,7 @@ export class SignalRProvider {
 
     console.log('Requesting sync from other clients...');
     
-    // Only send our state if we have any data
+
     if (this.doc.store.clients.size > 0) {
       try {
         const update = Y.encodeStateAsUpdate(this.doc);
@@ -223,7 +219,7 @@ export class SignalRProvider {
       console.log('Empty document, waiting for updates from others');
     }
 
-    // Send awareness so others see we joined
+
     try {
       const awarenessUpdate = awarenessProtocol.encodeAwarenessUpdate(
         this.awareness,
@@ -238,14 +234,14 @@ export class SignalRProvider {
   private async broadcastUpdate(update: Uint8Array) {
     if (!this.connected) return;
     
-    // Don't broadcast empty updates
+
     if (!update || update.length === 0) {
       console.log('Skipping empty update broadcast');
       return;
     }
 
     try {
-      // Convert Uint8Array to base64 string for SignalR JSON protocol
+
       const base64 = btoa(String.fromCharCode(...update));
       if (!base64 || base64.length === 0) {
         console.warn('Encoded empty base64, skipping broadcast');
@@ -262,7 +258,7 @@ export class SignalRProvider {
     if (!this.connected) return;
 
     try {
-      // Convert to JSON string for SignalR
+
       const data = JSON.stringify(Array.from(update));
       await this.connection.invoke('AwarenessUpdate', this.roomName, data);
     } catch (error) {
@@ -270,20 +266,17 @@ export class SignalRProvider {
     }
   }
 
-  /**
-   * Get the full document state for saving
-   * Returns the complete Yjs document state as a Uint8Array
-   */
+
   public getFullState(): Uint8Array {
     return Y.encodeStateAsUpdate(this.doc);
   }
 
   public async destroy() {
     if (this.connected) {
-      // Clear local awareness state before disconnecting
+
       this.awareness.setLocalState(null);
       
-      // Wait a moment for the awareness update to be sent
+
       await new Promise(resolve => setTimeout(resolve, 100));
       
       await this.connection.invoke('LeaveRoom', this.roomName);
@@ -293,7 +286,7 @@ export class SignalRProvider {
   }
 
   public on(event: string, handler: (event: any) => void) {
-    // Wrapper for event handling
+
     if (event === 'status') {
       this.connection.onreconnecting(() => handler({ status: 'connecting' }));
       this.connection.onreconnected(() => handler({ status: 'connected' }));

@@ -4,9 +4,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CollaborativeEditor.Services
 {
-    /// <summary>
-    /// Service for persisting and loading Yjs room state
-    /// </summary>
     public class RoomStateService
     {
         private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
@@ -20,9 +17,6 @@ namespace CollaborativeEditor.Services
             _logger = logger;
         }
 
-        /// <summary>
-        /// Load the persisted state for a room
-        /// </summary>
         public async Task<byte[]?> LoadRoomStateAsync(string roomName)
         {
             try
@@ -46,9 +40,6 @@ namespace CollaborativeEditor.Services
             }
         }
 
-        /// <summary>
-        /// Save the current state for a room
-        /// </summary>
         public async Task SaveRoomStateAsync(string roomName, byte[] yjsState, string? metadata = null)
         {
             try
@@ -59,7 +50,7 @@ namespace CollaborativeEditor.Services
                 
                 if (roomState != null)
                 {
-                    // Update existing
+
                     roomState.YjsState = yjsState;
                     roomState.LastModified = DateTime.UtcNow;
                     if (metadata != null)
@@ -69,7 +60,7 @@ namespace CollaborativeEditor.Services
                 }
                 else
                 {
-                    // Create new
+
                     roomState = new RoomState
                     {
                         Id = roomName,
@@ -90,9 +81,6 @@ namespace CollaborativeEditor.Services
             }
         }
 
-        /// <summary>
-        /// Delete the state for a room
-        /// </summary>
         public async Task DeleteRoomStateAsync(string roomName)
         {
             try
@@ -114,9 +102,6 @@ namespace CollaborativeEditor.Services
             }
         }
 
-        /// <summary>
-        /// Get all room names
-        /// </summary>
         public async Task<List<string>> GetAllRoomNamesAsync()
         {
             try
@@ -131,9 +116,6 @@ namespace CollaborativeEditor.Services
             }
         }
 
-        /// <summary>
-        /// Clean up old rooms (optional maintenance task)
-        /// </summary>
         public async Task<int> CleanupOldRoomsAsync(TimeSpan olderThan)
         {
             try

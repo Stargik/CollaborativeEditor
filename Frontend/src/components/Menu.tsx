@@ -33,7 +33,7 @@ export const Menu: React.FC = () => {
   }, [showRooms]);
 
   useEffect(() => {
-    // Listen for save completed events from SignalR
+
     if (provider?.connection) {
       provider.connection.on('SaveCompleted', (data: any) => {
         setIsSaving(false);
@@ -51,7 +51,7 @@ export const Menu: React.FC = () => {
           });
         }
         
-        // Clear status after 3 seconds
+
         setTimeout(() => setSaveStatus(null), 3000);
       });
 
@@ -87,14 +87,14 @@ export const Menu: React.FC = () => {
     
     setIsSaving(true);
     try {
-      // Get the full document state from the Yjs document
+
       const fullState = provider.getFullState();
       
       if (!fullState || fullState.length === 0) {
         throw new Error('No state to save');
       }
       
-      // Convert to base64 and send to server
+
       const base64State = btoa(String.fromCharCode(...fullState));
       await provider.connection.invoke('SaveFullState', roomName, base64State);
     } catch (error) {
@@ -126,7 +126,7 @@ export const Menu: React.FC = () => {
           timestamp: Date.now()
         });
         setTimeout(() => setSaveStatus(null), 3000);
-        loadRooms(); // Refresh the list
+        loadRooms();
       } else {
         throw new Error('Delete failed');
       }
@@ -159,7 +159,7 @@ export const Menu: React.FC = () => {
       });
       setTimeout(() => setSaveStatus(null), 3000);
       if (showRooms) {
-        loadRooms(); // Refresh if rooms list is visible
+        loadRooms();
       }
     } catch (error) {
       console.error('Error cleaning up:', error);

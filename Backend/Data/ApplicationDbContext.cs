@@ -3,9 +3,6 @@ using CollaborativeEditor.Models;
 
 namespace CollaborativeEditor.Data
 {
-    /// <summary>
-    /// Database context for the collaborative editor
-    /// </summary>
     public class ApplicationDbContext : DbContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -13,9 +10,6 @@ namespace CollaborativeEditor.Data
         {
         }
 
-        /// <summary>
-        /// Room states table - stores Yjs document state per room
-        /// </summary>
         public DbSet<RoomState> RoomStates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

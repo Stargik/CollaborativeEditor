@@ -32,7 +32,7 @@ export const Canvas: React.FC<CanvasProps> = ({
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [currentShape, setCurrentShape] = useState<Shape | null>(null)
 
-  // Resize canvas
+
   useEffect(() => {
     const handleResize = () => {
       const container = containerRef.current
@@ -48,7 +48,7 @@ export const Canvas: React.FC<CanvasProps> = ({
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Render shapes
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -58,12 +58,12 @@ export const Canvas: React.FC<CanvasProps> = ({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    // Draw all shapes
+
     shapes.forEach((shape) => {
       drawShape(ctx, shape, shape === selectedShape)
     })
 
-    // Draw current shape being created
+
     if (currentShape) {
       drawShape(ctx, currentShape, false)
     }
@@ -106,7 +106,7 @@ export const Canvas: React.FC<CanvasProps> = ({
         break
     }
 
-    // Draw selection handles
+
     if (isSelected) {
       drawSelectionHandles(ctx, shape)
     }

@@ -2,14 +2,14 @@ import * as Y from 'yjs';
 import { create } from 'zustand';
 import { SignalRProvider } from '../providers/SignalRProvider';
 
-// Yjs document for CRDT-based collaboration
+
 export const ydoc = new Y.Doc();
 
-// Maps for shared state
+
 export const yNodes = ydoc.getMap('nodes');
 export const yEdges = ydoc.getMap('edges');
 
-// SignalR provider for sync
+
 let provider: SignalRProvider | null = null;
 
 export const initProvider = (roomName: string, signalRUrl: string) => {
@@ -19,7 +19,7 @@ export const initProvider = (roomName: string, signalRUrl: string) => {
   
   provider = new SignalRProvider(signalRUrl, roomName, ydoc);
 
-  // Set up awareness for cursor/selection tracking
+
   provider.awareness.setLocalStateField('user', {
     name: localStorage.getItem('username') || 'Anonymous',
     color: getRandomColor(),
@@ -31,7 +31,7 @@ export const initProvider = (roomName: string, signalRUrl: string) => {
 
 export const getProvider = () => provider;
 
-// Helper function to generate random color for users
+
 function getRandomColor() {
   const colors = [
     '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', 
@@ -40,7 +40,7 @@ function getRandomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// Zustand store for local UI state
+
 interface CollaborativeState {
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;

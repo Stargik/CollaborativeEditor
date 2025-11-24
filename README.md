@@ -1,206 +1,410 @@
-# Collaborative Diagram Editor# Collaborative Diagram Editor# Collaborative Diagram Editor
+# Collaborative Diagram Editor# Collaborative Diagram Editor# Collaborative Diagram Editor# Collaborative Diagram Editor
 
 
 
-A real-time collaborative diagram editor using **React Flow** + **Yjs (CRDT)** + **.NET SignalR** for enterprise-grade collaborative editing.
+A real-time collaborative diagram editor built with ASP.NET Core SignalR and React, implementing the "Thick Client, Dumb Pipe" architecture using Yjs CRDT library.
 
 
 
-## Architecture: "Thick Client, Dumb Pipe" with .NET SignalRA real-time collaborative diagram editor built with **React Flow** + **Yjs** (CRDT) for truly conflict-free collaboration.A real-time collaborative diagram editor built with React + TypeScript frontend and .NET backend with SignalR.
+## OverviewA real-time collaborative diagram editor using **React Flow** + **Yjs (CRDT)** + **.NET SignalR** for enterprise-grade collaborative editing.
 
 
 
-- **Thick Client**: All CRDT logic runs in browser using Yjs
+This application enables multiple users to simultaneously create and edit diagrams with automatic conflict resolution. The system uses Conflict-free Replicated Data Types (CRDTs) via Yjs to ensure eventual consistency without requiring complex server-side synchronization logic.
+
+
+
+## Architecture## Architecture: "Thick Client, Dumb Pipe" with .NET SignalRA real-time collaborative diagram editor built with **React Flow** + **Yjs** (CRDT) for truly conflict-free collaboration.A real-time collaborative diagram editor built with React + TypeScript frontend and .NET backend with SignalR.
+
+
+
+**Thick Client, Dumb Pipe**
+
+- **Client-side (Thick)**: All CRDT logic, conflict resolution, and document merging handled by Yjs in the browser
+
+- **Server-side (Dumb Pipe)**: SignalR hub acts as a simple message relay, broadcasting binary updates without understanding their content- **Thick Client**: All CRDT logic runs in browser using Yjs
+
+- **Persistence**: SQLite database stores complete document snapshots for recovery
 
 - **Dumb Pipe**: .NET SignalR hub acts as simple message relay
 
+## Key Features
+
 - **Enterprise Ready**: Built on .NET 8.0 with SignalR for production reliability## Architecture: "Thick Client, Dumb Pipe"## Features
 
+- **Real-time Collaboration**: Multiple users can edit simultaneously with instant synchronization
+
+- **Conflict-Free**: Yjs CRDT automatically resolves concurrent edits without conflicts
+
+- **Automatic Reconnection**: Clients automatically reconnect and resync after network interruptions
+
+- **State Persistence**: Manual save to SQLite database with full state snapshots## Features
+
+- **Room Management**: Create, list, and delete collaboration rooms
+
+- **Awareness Protocol**: See other users' cursors and selections in real-time
 
 
-## Features
+
+## Technology Stack- ✅ Real-time collaboration without conflicts (CRDT)This application follows the modern collaborative editing pattern:- **Drawing Tools**: Rectangle, Circle, Line, and Text
 
 
 
-- ✅ Real-time collaboration without conflicts (CRDT)This application follows the modern collaborative editing pattern:- **Drawing Tools**: Rectangle, Circle, Line, and Text
+### Backend- ✅ Live cursors and user awareness
 
-- ✅ Live cursors and user awareness
+- ASP.NET Core 8.0
 
-- ✅ React Flow diagram editor- **Thick Client**: All CRDT (Conflict-free Replicated Data Types) logic runs in the browser using Yjs- **Real-time Collaboration**: Multiple users can edit simultaneously via SignalR
+- SignalR for WebSocket communication- ✅ React Flow diagram editor- **Thick Client**: All CRDT (Conflict-free Replicated Data Types) logic runs in the browser using Yjs- **Real-time Collaboration**: Multiple users can edit simultaneously via SignalR
 
-- ✅ SignalR with automatic reconnection
+- Entity Framework Core with SQLite
 
-- ✅ Room-based collaboration- **Dumb Pipe**: WebSocket server simply relays messages between clients without any business logic- **Object Manipulation**: Select, move, and edit shapes
+- Binary message relay (no JSON parsing)- ✅ SignalR with automatic reconnection
 
-- ✅ Offline support
 
-- **No Server-Side State**: The server doesn't maintain document state, making it trivially scalable- **Properties Panel**: Edit shape properties (position, size, colors, etc.)
+
+### Frontend- ✅ Room-based collaboration- **Dumb Pipe**: WebSocket server simply relays messages between clients without any business logic- **Object Manipulation**: Select, move, and edit shapes
+
+- React 18 with TypeScript
+
+- Yjs CRDT library for document synchronization- ✅ Offline support
+
+- React Flow for diagram canvas
+
+- SignalR JavaScript client- **No Server-Side State**: The server doesn't maintain document state, making it trivially scalable- **Properties Panel**: Edit shape properties (position, size, colors, etc.)
+
+- Zustand for state management
 
 ## Quick Start
 
+## Getting Started
+
 - **Layer Management**: View and select shapes from the layers panel
 
-```bash
+### Prerequisites
+
+- .NET 8.0 SDK```bash
+
+- Node.js 16+ with npm
 
 # Install frontend dependencies## Features- **User Presence**: See who is currently editing
 
+### Installation
+
 cd Frontend && npm install
 
-- **Modern UI**: Built with React and TypeScript
+1. Clone the repository
 
-# Start both servers
+2. Install dependencies:- **Modern UI**: Built with React and TypeScript
+
+```bash
+
+cd Backend# Start both servers
+
+dotnet restore
 
 cd .. && chmod +x start.sh && ./start.sh- ✅ **Real-time Collaboration**: Multiple users can edit simultaneously without conflicts- **Automatic Reconnection**: Handles connection drops gracefully
+
+cd ../Frontend
+
+npm install```
 
 ```
 
 - ✅ **CRDT-based Sync**: Uses Yjs for automatic conflict resolution
 
+### Running the Application
+
 Visit http://localhost:3000
 
-- ✅ **Live Cursors**: See other users' cursors in real-time## Getting Started
+Use the provided start script:
 
-## Technology Stack
-
-- ✅ **React Flow**: Professional diagram library with built-in features
-
-**Frontend**: React 18, TypeScript, React Flow, Yjs, SignalR Client, Vite
-
-**Backend**: .NET 8.0, ASP.NET Core, SignalR, C#- ✅ **Drawing Tools**: Rectangle, Circle, Text nodes with connections### Prerequisites
-
-
-
-## Project Structure- ✅ **User Awareness**: See who's editing what in real-time
-
-
-
-- `Backend/Hubs/YjsHub.cs` - SignalR hub (dumb pipe)- ✅ **Automatic Sync**: Changes propagate instantly with eventual consistency- Node.js 18+ and npm
-
-- `Frontend/src/providers/SignalRProvider.ts` - Yjs ↔ SignalR bridge
-
-- `Frontend/src/components/CollaborativeCanvas.tsx` - Main canvas- ✅ **Offline Support**: Continue editing offline, sync when reconnected- .NET 8.0 SDK
-
-- `Frontend/src/hooks/useYjsSync.ts` - React Flow sync
-
-
-
-## How It Works
-
-## Technology Stack### Frontend Setup
-
-1. **User edits** → Yjs updates locally (instant feedback)
-
-2. **Yjs encodes** change as binary message
-
-3. **SignalR relays** message to other clients in room
-
-4. **Other clients** apply update automatically (CRDT merge)### Frontend1. Navigate to the Frontend directory:
-
-
-
-The SignalR hub is just ~100 lines - it routes messages, no business logic!- **React 18** - UI library```bash
-
-
-
-## Scaling- **TypeScript** - Type safetycd Frontend
-
-
-
-Add Redis backplane for horizontal scaling:- **React Flow** - Diagram rendering and interaction```
-
-
-
-```csharp- **Yjs** - CRDT for conflict-free collaboration
-
-builder.Services.AddSignalR()
-
-    .AddStackExchangeRedis("redis-connection-string");- **y-websocket** - WebSocket provider for Yjs2. Install dependencies:
-
-```
-
-- **Zustand** - Local state management```bash
-
-## License
-
-- **Vite** - Build tool and dev servernpm install
-
-MIT
-
-```
-
-### Backend
-
-- **Node.js WebSocket Server** - Simple message relay (dumb pipe)3. Start the development server:
-
-- No database required - all state is distributed across clients```bash
-
-npm run dev
-
-## Quick Start```
-
-
-
-### PrerequisitesThe frontend will be available at `http://localhost:3000`
-
-- Node.js 18+ and npm
-
-- Modern browser with WebSocket support### Backend Setup
-
-
-
-### Installation1. Navigate to the Backend directory:
-
-```bash
-
-1. Clone the repository:cd Backend
-
-```bash```
-
-git clone <repository-url>
-
-cd CollaborativeEditor2. Restore dependencies:
-
-``````bash
-
-dotnet restore
-
-2. Install frontend dependencies:```
-
-```bash
-
-cd Frontend3. Run the server:
-
-npm install```bash
-
-```dotnet run
-
-```
-
-3. Start the application:
-
-```bashThe backend will be available at `http://localhost:5000`
-
-cd ..
-
-chmod +x start.sh### Running the Full Application
+```bash- ✅ **Live Cursors**: See other users' cursors in real-time## Getting Started
 
 ./start.sh
 
-```#### Option 1: Using the Start Script (Recommended)
+```## Technology Stack
 
-From the project root:
 
-This will start:```bash
 
-- Yjs WebSocket server on `ws://localhost:1234`./start.sh
+Or start services manually:- ✅ **React Flow**: Professional diagram library with built-in features
+
+
+
+**Backend:****Frontend**: React 18, TypeScript, React Flow, Yjs, SignalR Client, Vite
+
+```bash
+
+cd Backend**Backend**: .NET 8.0, ASP.NET Core, SignalR, C#- ✅ **Drawing Tools**: Rectangle, Circle, Text nodes with connections### Prerequisites
+
+dotnet run
+
+```
+
+
+
+**Frontend:**## Project Structure- ✅ **User Awareness**: See who's editing what in real-time
+
+```bash
+
+cd Frontend
+
+npm run dev
+
+```- `Backend/Hubs/YjsHub.cs` - SignalR hub (dumb pipe)- ✅ **Automatic Sync**: Changes propagate instantly with eventual consistency- Node.js 18+ and npm
+
+
+
+The application will be available at:- `Frontend/src/providers/SignalRProvider.ts` - Yjs ↔ SignalR bridge
+
+- Frontend: http://localhost:3000
+
+- Backend API: http://localhost:5078- `Frontend/src/components/CollaborativeCanvas.tsx` - Main canvas- ✅ **Offline Support**: Continue editing offline, sync when reconnected- .NET 8.0 SDK
+
+- SignalR Hub: http://localhost:5078/yjsHub
+
+- `Frontend/src/hooks/useYjsSync.ts` - React Flow sync
+
+## How It Works
+
+
+
+### CRDTs (Conflict-free Replicated Data Types)
+
+## How It Works
+
+CRDTs are data structures that can be replicated across multiple computers in a network, where the replicas can be updated independently and concurrently without coordination between them, and where it is always mathematically possible to resolve inconsistencies that might come up.
+
+## Technology Stack### Frontend Setup
+
+**Key Properties:**
+
+- **Commutativity**: Operations can be applied in any order1. **User edits** → Yjs updates locally (instant feedback)
+
+- **Associativity**: Operations can be grouped in any way
+
+- **Idempotency**: Operations can be applied multiple times with the same result2. **Yjs encodes** change as binary message
+
+- **Eventual Consistency**: All replicas converge to the same state
+
+3. **SignalR relays** message to other clients in room
+
+### Yjs Implementation
+
+4. **Other clients** apply update automatically (CRDT merge)### Frontend1. Navigate to the Frontend directory:
+
+Yjs is a high-performance CRDT implementation optimized for shared editing:
+
+
+
+1. **Document Structure**: Yjs maintains a shared document (`Y.Doc`) containing typed shared data structures (`Y.Map`, `Y.Array`)
+
+2. **Update Encoding**: Changes are encoded as binary updates (compact and efficient)The SignalR hub is just ~100 lines - it routes messages, no business logic!- **React 18** - UI library```bash
+
+3. **State Vectors**: Track which changes each client has seen
+
+4. **Sync Protocol**: Efficiently synchronize by exchanging only missing updates
+
+
+
+### Message Flow## Scaling- **TypeScript** - Type safetycd Frontend
+
+
+
+1. **User Action**: User creates/moves/edits a shape
+
+2. **Yjs Update**: Yjs generates a binary update representing the change
+
+3. **Broadcast**: Update sent to SignalR hub via `SyncMessage`Add Redis backplane for horizontal scaling:- **React Flow** - Diagram rendering and interaction```
+
+4. **Relay**: Server broadcasts update to all other clients in the room
+
+5. **Apply**: Each client applies the update to their local Yjs document
+
+6. **Reconcile**: Yjs automatically merges concurrent changes
+
+7. **React Update**: UI updates reflect the merged state```csharp- **Yjs** - CRDT for conflict-free collaboration
+
+
+
+### Persistencebuilder.Services.AddSignalR()
+
+
+
+The save mechanism captures complete document state:    .AddStackExchangeRedis("redis-connection-string");- **y-websocket** - WebSocket provider for Yjs2. Install dependencies:
+
+
+
+1. User clicks "Save" button```
+
+2. Client calls `Y.encodeStateAsUpdate(doc)` to get full snapshot
+
+3. Binary state sent to server via `SaveFullState`- **Zustand** - Local state management```bash
+
+4. Server stores in SQLite database
+
+5. New clients joining the room receive persisted state via `LoadPersistedState`## License
+
+
+
+## Project Structure- **Vite** - Build tool and dev servernpm install
+
+
+
+```MIT
+
+CollaborativeEditor/
+
+├── Backend/```
+
+│   ├── Controllers/       
+
+│   │   └── RoomsController.cs### Backend
+
+│   ├── Data/
+
+│   │   └── ApplicationDbContext.cs- **Node.js WebSocket Server** - Simple message relay (dumb pipe)3. Start the development server:
+
+│   ├── Hubs/
+
+│   │   └── YjsHub.cs- No database required - all state is distributed across clients```bash
+
+│   ├── Migrations/
+
+│   ├── Models/npm run dev
+
+│   │   └── RoomState.cs
+
+│   ├── Services/## Quick Start```
+
+│   │   └── RoomStateService.cs
+
+│   └── Program.cs
+
+│
+
+├── Frontend/### PrerequisitesThe frontend will be available at `http://localhost:3000`
+
+│   └── src/
+
+│       ├── components/- Node.js 18+ and npm
+
+│       │   ├── Canvas.tsx
+
+│       │   ├── CollaborativeCanvas.tsx- Modern browser with WebSocket support### Backend Setup
+
+│       │   ├── CustomNodes.tsx
+
+│       │   ├── Header.tsx
+
+│       │   ├── Menu.tsx
+
+│       │   ├── PropertiesPanel.tsx### Installation1. Navigate to the Backend directory:
+
+│       │   ├── Sidebar.tsx
+
+│       │   └── Toolbar.tsx```bash
+
+│       ├── providers/
+
+│       │   └── SignalRProvider.ts1. Clone the repository:cd Backend
+
+│       ├── store/
+
+│       │   └── collaborativeStore.ts```bash```
+
+│       ├── types/
+
+│       │   └── index.tsgit clone <repository-url>
+
+│       └── App.tsx
+
+│cd CollaborativeEditor2. Restore dependencies:
+
+└── start.sh
+
+`````````bash
+
+
+
+## API Endpointsdotnet restore
+
+
+
+### SignalR Hub Methods2. Install frontend dependencies:```
+
+- `JoinRoom(roomName)` - Join a collaboration room
+
+- `LeaveRoom(roomName)` - Leave a room```bash
+
+- `SyncMessage(roomName, message)` - Broadcast Yjs update
+
+- `SaveFullState(roomName, stateBase64)` - Save document snapshotcd Frontend3. Run the server:
+
+- `AwarenessUpdate(roomName, data)` - Broadcast cursor/selection
+
+npm install```bash
+
+### REST API
+
+- `GET /api/rooms` - List all rooms```dotnet run
+
+- `GET /api/rooms/{name}` - Get room details
+
+- `DELETE /api/rooms/{name}` - Delete a room```
+
+- `POST /api/rooms/cleanup?daysOld=30` - Delete old rooms
+
+3. Start the application:
+
+## Development
+
+```bashThe backend will be available at `http://localhost:5000`
+
+### Building
+
+```bashcd ..
+
+cd Backend
+
+dotnet buildchmod +x start.sh### Running the Full Application
+
+
+
+cd ../Frontend./start.sh
+
+npm run build
+
+``````#### Option 1: Using the Start Script (Recommended)
+
+
+
+### Database MigrationsFrom the project root:
+
+```bash
+
+cd BackendThis will start:```bash
+
+dotnet ef migrations add MigrationName
+
+dotnet ef database update- Yjs WebSocket server on `ws://localhost:1234`./start.sh
+
+```
 
 - Frontend dev server on `http://localhost:3000````
 
+## License
 
+
+
+MIT
 
 ### Manual Start#### Option 2: Manual Start
 
+## Author
 
+
+
+Aleksandr Starzhynskyi
 
 If you prefer to start services manually:1. Start the backend server (Terminal 1):
 

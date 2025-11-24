@@ -13,10 +13,10 @@ function App() {
 
   useEffect(() => {
     if (connected) {
-      // Use SignalR hub URL instead of WebSocket
+
       const provider = initProvider(roomName, 'http://localhost:5078/yjsHub');
       
-      // Store in Zustand for access in Menu and other components
+
       setProvider(provider);
       setStoreRoomName(roomName);
       
@@ -24,7 +24,7 @@ function App() {
         console.log('SignalR status:', event.status);
       });
 
-      // Cleanup on page unload/close
+
       const handleBeforeUnload = () => {
         provider.destroy();
       };

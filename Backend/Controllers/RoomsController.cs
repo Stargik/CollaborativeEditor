@@ -23,9 +23,6 @@ public class RoomsController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Get all rooms with their metadata
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAllRooms()
     {
@@ -61,9 +58,6 @@ public class RoomsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Get a specific room by name
-    /// </summary>
     [HttpGet("{roomName}")]
     public async Task<IActionResult> GetRoom(string roomName)
     {
@@ -92,15 +86,12 @@ public class RoomsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Delete a room
-    /// </summary>
     [HttpDelete("{roomName}")]
     public async Task<IActionResult> DeleteRoom(string roomName)
     {
         try
         {
-            // Check if room exists first
+
             await using var context = await _contextFactory.CreateDbContextAsync();
             var roomState = await context.RoomStates.FindAsync(roomName);
             
@@ -120,9 +111,6 @@ public class RoomsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Clean up old rooms
-    /// </summary>
     [HttpPost("cleanup")]
     public async Task<IActionResult> CleanupOldRooms([FromQuery] int daysOld = 30)
     {

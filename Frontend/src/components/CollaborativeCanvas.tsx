@@ -45,12 +45,12 @@ function CollaborativeCanvasInner() {
 
   const reactFlowInstance = useReactFlow();
 
-  // Handle text change in nodes
+
   const handleTextChange = useCallback((nodeId: string, text: string) => {
     updateNode(nodeId, { data: { text } });
   }, [updateNode]);
 
-  // Handle canvas click for drawing
+
   const onPaneClick = useCallback((event: any) => {
     if (currentTool === 'select') {
       setSelectedNodeId(null);
@@ -108,13 +108,13 @@ function CollaborativeCanvasInner() {
     }
   }, [currentTool, fillColor, strokeColor, addNode, setSelectedNodeId, reactFlowInstance]);
 
-  // Handle node selection
+
   const onNodeClick = useCallback((event: any, node: any) => {
     event.stopPropagation();
     setSelectedNodeId(node.id);
   }, [setSelectedNodeId]);
 
-  // Handle connection between nodes
+
   const onConnect = useCallback((params: any) => {
     addEdge({
       source: params.source,
@@ -125,10 +125,10 @@ function CollaborativeCanvasInner() {
     });
   }, [addEdge, strokeColor]);
 
-  // Handle keyboard shortcuts
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Delete selected nodes (single or multiple)
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
         const selectedNodes = nodes.filter((node) => node.selected);
@@ -141,7 +141,7 @@ function CollaborativeCanvasInner() {
         }
       }
       
-      // Tool shortcuts
+
       if (e.key === 'v') setCurrentTool('select');
       if (e.key === 'r') setCurrentTool('rectangle');
       if (e.key === 'c') setCurrentTool('circle');
@@ -152,13 +152,13 @@ function CollaborativeCanvasInner() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nodes, selectedNodeId, deleteNode, setSelectedNodeId, setCurrentTool]);
 
-  // Display remote cursors
+
   const remoteCursors = Array.from(remoteUsers.entries())
     .filter(([clientId]) => clientId !== getProvider()?.awareness.clientID)
     .map(([clientId, state]: [number, any]) => {
       if (!state.user || !state.user.cursor) return null;
       
-      // Convert flow coordinates back to screen coordinates for display
+
       const screenPosition = reactFlowInstance.flowToScreenPosition({
         x: state.user.cursor.x,
         y: state.user.cursor.y,
@@ -203,11 +203,11 @@ function CollaborativeCanvasInner() {
       );
     });
 
-  // Track mouse movement for cursor sharing
+
   const onMouseMove = useCallback((event: any) => {
     const provider = getProvider();
     if (provider) {
-      // Convert screen coordinates to flow coordinates for consistent cursor position
+
       const flowPosition = reactFlowInstance.screenToFlowPosition({
         x: event.clientX,
         y: event.clientY,
@@ -220,7 +220,7 @@ function CollaborativeCanvasInner() {
     }
   }, [reactFlowInstance]);
 
-  // Add onTextChange callback to all nodes
+
   const nodesWithCallbacks = nodes.map((node) => ({
     ...node,
     data: {
