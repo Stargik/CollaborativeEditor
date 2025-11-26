@@ -12,8 +12,6 @@ export class SignalRProvider {
     this.doc = doc;
     this.roomName = roomName;
     this.awareness = new awarenessProtocol.Awareness(doc);
-
-
     this.connection = new HubConnectionBuilder()
       .withUrl(serverUrl, {
         withCredentials: false,
@@ -27,7 +25,6 @@ export class SignalRProvider {
         }
       })
       .build();
-
     this.setupEventHandlers();
     this.connect();
   }
@@ -36,27 +33,21 @@ export class SignalRProvider {
 
     this.connection.on('ReceiveSyncMessage', (message: string) => {
       try {
-
         if (!message || message.length === 0) {
           return;
         }
-        
-
         const binaryString = atob(message);
         if (binaryString.length === 0) {
           return;
         }
-        
         const uint8Array = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
           uint8Array[i] = binaryString.charCodeAt(i);
         }
-        
         Y.applyUpdate(this.doc, uint8Array);
       } catch (error) {
       }
     });
-
 
     this.connection.on('LoadPersistedState', (message: string) => {
       try {
@@ -65,14 +56,10 @@ export class SignalRProvider {
         for (let i = 0; i < binaryString.length; i++) {
           uint8Array[i] = binaryString.charCodeAt(i);
         }
-        
-
-
         Y.applyUpdate(this.doc, uint8Array, this);
       } catch (error) {
       }
     });
-
 
     this.connection.on('ReceiveAwarenessUpdate', (awarenessData: string) => {
       const update = JSON.parse(awarenessData);
@@ -83,11 +70,9 @@ export class SignalRProvider {
       );
     });
 
-
     this.connection.on('UserJoined', () => {
       if (this.connected && this.doc.store.clients.size > 0) {
         try {
-
           const fullState = Y.encodeStateAsUpdate(this.doc);
           if (fullState && fullState.length > 0) {
             this.broadcastUpdate(fullState);
@@ -97,43 +82,29 @@ export class SignalRProvider {
       }
     });
 
-
-    this.connection.on('UserLeft', () => {
-    });
-
-
     this.connection.onreconnecting(() => {
       this.connected = false;
     });
 
-
     this.connection.onreconnected(async () => {
       try {
-
         await this.connection.invoke('JoinRoom', this.roomName);
         this.connected = true;
-        
-
         this.requestSync();
       } catch (error) {
       }
     });
 
-
     this.connection.onclose(() => {
       this.connected = false;
-
       this.awareness.setLocalState(null);
     });
 
-
     this.doc.on('update', (update: Uint8Array, origin: any) => {
-
       if (origin !== this) {
         this.broadcastUpdate(update);
       }
     });
-
 
     this.awareness.on('update', ({ added, updated, removed }: any) => {
       const changedClients = added.concat(updated, removed);
@@ -145,13 +116,8 @@ export class SignalRProvider {
   private async connect() {
     try {
       await this.connection.start();
-      
-
       await this.connection.invoke('JoinRoom', this.roomName);
       this.connected = true;
-      
-
-
       this.requestSync();
     } catch (error: any) {
       setTimeout(() => this.connect(), 5000);
@@ -160,7 +126,6 @@ export class SignalRProvider {
 
   private requestSync() {
     if (!this.connected) return;
-
     if (this.doc.store.clients.size > 0) {
       try {
         const update = Y.encodeStateAsUpdate(this.doc);
@@ -170,8 +135,6 @@ export class SignalRProvider {
       } catch (error) {
       }
     }
-
-
     try {
       const awarenessUpdate = awarenessProtocol.encodeAwarenessUpdate(
         this.awareness,
@@ -184,19 +147,14 @@ export class SignalRProvider {
 
   private async broadcastUpdate(update: Uint8Array) {
     if (!this.connected) return;
-    
-
     if (!update || update.length === 0) {
       return;
     }
-
     try {
-
       const base64 = btoa(String.fromCharCode(...update));
       if (!base64 || base64.length === 0) {
         return;
       }
-      
       await this.connection.invoke('SyncMessage', this.roomName, base64);
     } catch (error) {
     }
@@ -204,9 +162,7 @@ export class SignalRProvider {
 
   private async broadcastAwareness(update: Uint8Array) {
     if (!this.connected) return;
-
     try {
-
       const data = JSON.stringify(Array.from(update));
       await this.connection.invoke('AwarenessUpdate', this.roomName, data);
     } catch (error) {
@@ -220,12 +176,8 @@ export class SignalRProvider {
 
   public async destroy() {
     if (this.connected) {
-
       this.awareness.setLocalState(null);
-      
-
       await new Promise(resolve => setTimeout(resolve, 100));
-      
       await this.connection.invoke('LeaveRoom', this.roomName);
       await this.connection.stop();
     }
@@ -233,7 +185,6 @@ export class SignalRProvider {
   }
 
   public on(event: string, handler: (event: any) => void) {
-
     if (event === 'status') {
       this.connection.onreconnecting(() => handler({ status: 'connecting' }));
       this.connection.onreconnected(() => handler({ status: 'connected' }));

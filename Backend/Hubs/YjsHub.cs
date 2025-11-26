@@ -12,10 +12,11 @@ namespace CollaborativeEditor.Hubs
         
         private readonly RoomStateService _roomStateService;
 
-    public YjsHub(RoomStateService roomStateService)
-    {
-        _roomStateService = roomStateService;
-    }        public async Task JoinRoom(string roomName)
+        public YjsHub(RoomStateService roomStateService)
+        {
+            _roomStateService = roomStateService;
+        }        
+        public async Task JoinRoom(string roomName)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
             
@@ -58,8 +59,6 @@ namespace CollaborativeEditor.Hubs
                     }
                 }
             }
-
-            Console.WriteLine($"Client {Context.ConnectionId} left room: {roomName}");
             await Clients.OthersInGroup(roomName).SendAsync("UserLeft", Context.ConnectionId);
         }
 

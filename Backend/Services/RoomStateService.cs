@@ -6,11 +6,12 @@ namespace CollaborativeEditor.Services
 {
 public class RoomStateService
 {
-    private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;    public RoomStateService(
-        IDbContextFactory<ApplicationDbContext> contextFactory)
-    {
-        _contextFactory = contextFactory;
-    }        public async Task<byte[]?> LoadRoomStateAsync(string roomName)
+        private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;    public RoomStateService(
+            IDbContextFactory<ApplicationDbContext> contextFactory)
+        {
+            _contextFactory = contextFactory;
+        }        
+        public async Task<byte[]?> LoadRoomStateAsync(string roomName)
         {
             try
             {

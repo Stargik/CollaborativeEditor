@@ -16,21 +16,16 @@ export const initProvider = (roomName: string, signalRUrl: string) => {
   if (provider) {
     provider.destroy();
   }
-  
   provider = new SignalRProvider(signalRUrl, roomName, ydoc);
-
-
   provider.awareness.setLocalStateField('user', {
     name: localStorage.getItem('username') || 'Anonymous',
     color: getRandomColor(),
     cursor: null,
   });
-
   return provider;
 };
 
 export const getProvider = () => provider;
-
 
 function getRandomColor() {
   const colors = [
@@ -39,7 +34,6 @@ function getRandomColor() {
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 }
-
 
 interface CollaborativeState {
   selectedNodeId: string | null;
