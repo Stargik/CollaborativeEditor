@@ -20,9 +20,6 @@ function App() {
       setProvider(provider);
       setStoreRoomName(roomName);
       
-      provider.on('status', (event: any) => {
-        console.log('SignalR status:', event.status);
-      });
 
 
       const handleBeforeUnload = () => {

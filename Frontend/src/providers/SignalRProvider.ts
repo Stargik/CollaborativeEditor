@@ -23,13 +23,7 @@ export class SignalRProvider {
         nextRetryDelayInMilliseconds: (retryContext) => {
 
           const delay = Math.min(1000 * Math.pow(2, retryContext.previousRetryCount), 30000);
-          console.log(`Reconnection attempt ${retryContext.previousRetryCount + 1}, waiting ${delay}ms...`);
           return delay;
-        }
-      })
-      .configureLogging({
-        log: (logLevel, message) => {
-          console.log(`[SignalR ${logLevel}]:`, message);
         }
       })
       .build();
@@ -44,14 +38,12 @@ export class SignalRProvider {
       try {
 
         if (!message || message.length === 0) {
-          console.log('Received empty sync message, skipping');
           return;
         }
         
 
         const binaryString = atob(message);
         if (binaryString.length === 0) {
-          console.log('Decoded empty message, skipping');
           return;
         }
         
@@ -61,18 +53,13 @@ export class SignalRProvider {
         }
         
         Y.applyUpdate(this.doc, uint8Array);
-        console.log('Applied sync update, size:', uint8Array.length);
       } catch (error) {
-        console.error('Error processing sync message:', error, 'Message length:', message?.length);
       }
     });
 
 
     this.connection.on('LoadPersistedState', (message: string) => {
       try {
-        console.log('Received persisted state from server, length:', message.length);
-        
-
         const binaryString = atob(message);
         const uint8Array = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
@@ -82,9 +69,7 @@ export class SignalRProvider {
 
 
         Y.applyUpdate(this.doc, uint8Array, this);
-        console.log('✓ Applied persisted state, size:', uint8Array.length);
       } catch (error) {
-        console.error('Error loading persisted state:', error);
       }
     });
 
@@ -99,57 +84,43 @@ export class SignalRProvider {
     });
 
 
-    this.connection.on('UserJoined', (connectionId: string) => {
-      console.log('User joined:', connectionId);
-
+    this.connection.on('UserJoined', () => {
       if (this.connected && this.doc.store.clients.size > 0) {
         try {
 
           const fullState = Y.encodeStateAsUpdate(this.doc);
           if (fullState && fullState.length > 0) {
-            console.log('Sending full state to new user, size:', fullState.length);
             this.broadcastUpdate(fullState);
-          } else {
-            console.log('No state to send to new user');
           }
         } catch (error) {
-          console.error('Error encoding state for new user:', error);
         }
-      } else {
-        console.log('Empty document, nothing to send to new user');
       }
     });
 
 
-    this.connection.on('UserLeft', (connectionId: string) => {
-      console.log('User left:', connectionId);
+    this.connection.on('UserLeft', () => {
     });
 
 
-    this.connection.onreconnecting((error) => {
-      console.log('⚠ Connection lost, attempting to reconnect...', error?.message || '');
+    this.connection.onreconnecting(() => {
       this.connected = false;
     });
 
 
     this.connection.onreconnected(async () => {
-      console.log('✓ Reconnected to SignalR - rejoining room...');
       try {
 
         await this.connection.invoke('JoinRoom', this.roomName);
-        console.log(`✓ Rejoined room: ${this.roomName}`);
         this.connected = true;
         
 
         this.requestSync();
       } catch (error) {
-        console.error('Error rejoining room after reconnection:', error);
       }
     });
 
 
     this.connection.onclose(() => {
-      console.log('Disconnected from SignalR');
       this.connected = false;
 
       this.awareness.setLocalState(null);
@@ -173,28 +144,16 @@ export class SignalRProvider {
 
   private async connect() {
     try {
-      console.log('Attempting to connect to SignalR...');
       await this.connection.start();
-      console.log('✓ Connected to SignalR successfully');
       
 
       await this.connection.invoke('JoinRoom', this.roomName);
-      console.log(`✓ Joined room: ${this.roomName}`);
       this.connected = true;
       
 
 
       this.requestSync();
     } catch (error: any) {
-      console.error('✗ Error connecting to SignalR:', error);
-      console.error('Error details:', {
-        message: error.message,
-        statusCode: error.statusCode,
-        url: error.url || 'unknown'
-      });
-      
-
-      console.log('Retrying connection in 5 seconds...');
       setTimeout(() => this.connect(), 5000);
     }
   }
@@ -202,21 +161,14 @@ export class SignalRProvider {
   private requestSync() {
     if (!this.connected) return;
 
-    console.log('Requesting sync from other clients...');
-    
-
     if (this.doc.store.clients.size > 0) {
       try {
         const update = Y.encodeStateAsUpdate(this.doc);
         if (update.length > 0) {
-          console.log('Broadcasting our state, size:', update.length);
           this.broadcastUpdate(update);
         }
       } catch (error) {
-        console.error('Error encoding state for sync:', error);
       }
-    } else {
-      console.log('Empty document, waiting for updates from others');
     }
 
 
@@ -227,7 +179,6 @@ export class SignalRProvider {
       );
       this.broadcastAwareness(awarenessUpdate);
     } catch (error) {
-      console.error('Error broadcasting awareness:', error);
     }
   }
 
@@ -236,7 +187,6 @@ export class SignalRProvider {
     
 
     if (!update || update.length === 0) {
-      console.log('Skipping empty update broadcast');
       return;
     }
 
@@ -244,13 +194,11 @@ export class SignalRProvider {
 
       const base64 = btoa(String.fromCharCode(...update));
       if (!base64 || base64.length === 0) {
-        console.warn('Encoded empty base64, skipping broadcast');
         return;
       }
       
       await this.connection.invoke('SyncMessage', this.roomName, base64);
     } catch (error) {
-      console.error('Error broadcasting update:', error);
     }
   }
 
@@ -262,7 +210,6 @@ export class SignalRProvider {
       const data = JSON.stringify(Array.from(update));
       await this.connection.invoke('AwarenessUpdate', this.roomName, data);
     } catch (error) {
-      console.error('Error broadcasting awareness:', error);
     }
   }
 

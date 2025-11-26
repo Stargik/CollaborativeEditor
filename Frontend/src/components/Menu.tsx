@@ -70,7 +70,6 @@ export const Menu: React.FC = () => {
         setRooms(data);
       }
     } catch (error) {
-      console.error('Error loading rooms:', error);
       setSaveStatus({
         message: 'Failed to load rooms',
         type: 'error',
@@ -98,7 +97,6 @@ export const Menu: React.FC = () => {
       const base64State = btoa(String.fromCharCode(...fullState));
       await provider.connection.invoke('SaveFullState', roomName, base64State);
     } catch (error) {
-      console.error('Error saving:', error);
       setIsSaving(false);
       setSaveStatus({
         message: 'Save failed!',
@@ -131,7 +129,6 @@ export const Menu: React.FC = () => {
         throw new Error('Delete failed');
       }
     } catch (error) {
-      console.error('Error deleting room:', error);
       setSaveStatus({
         message: 'Delete failed!',
         type: 'error',
@@ -162,7 +159,6 @@ export const Menu: React.FC = () => {
         loadRooms();
       }
     } catch (error) {
-      console.error('Error cleaning up:', error);
       setSaveStatus({
         message: 'Cleanup failed!',
         type: 'error',
