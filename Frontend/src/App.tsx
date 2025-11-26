@@ -44,9 +44,7 @@ function App() {
     return (
       <div className="connection-screen">
         <div className="connection-dialog">
-          <h1>Collaborative Diagram Editor</h1>
-          <p>Real-time collaboration with CRDT (Yjs) and React Flow</p>
-          
+          <h1>Collaborative Diagram Editor</h1>          
           <div className="form-group">
             <label htmlFor="username">Your Name:</label>
             <input
