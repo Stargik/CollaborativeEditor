@@ -11,15 +11,11 @@ namespace CollaborativeEditor.Hubs
         private static readonly ConcurrentDictionary<string, byte[]> _roomStates = new();
         
         private readonly RoomStateService _roomStateService;
-        private readonly ILogger<YjsHub> _logger;
 
-        public YjsHub(RoomStateService roomStateService, ILogger<YjsHub> logger)
-        {
-            _roomStateService = roomStateService;
-            _logger = logger;
-        }
-
-        public async Task JoinRoom(string roomName)
+    public YjsHub(RoomStateService roomStateService)
+    {
+        _roomStateService = roomStateService;
+    }        public async Task JoinRoom(string roomName)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
             
@@ -32,20 +28,16 @@ namespace CollaborativeEditor.Hubs
                 _rooms[roomName].Add(Context.ConnectionId);
             }
 
-            _logger.LogInformation($"Client {Context.ConnectionId} joined room: {roomName}");
-            
             var persistedState = await _roomStateService.LoadRoomStateAsync(roomName);
             if (persistedState != null && persistedState.Length > 0)
             {
                 _roomStates.TryAdd(roomName, persistedState);
                 var base64State = Convert.ToBase64String(persistedState);
                 await Clients.Caller.SendAsync("LoadPersistedState", base64State);
-                _logger.LogInformation($"Sent persisted state to client {Context.ConnectionId} for room {roomName}, size: {persistedState.Length} bytes");
             }
             else
             {
                 _roomStates.TryAdd(roomName, Array.Empty<byte>());
-                _logger.LogInformation($"No persisted state found for room {roomName}, starting fresh");
             }
             
             await Clients.OthersInGroup(roomName).SendAsync("UserJoined", Context.ConnectionId);
@@ -75,11 +67,8 @@ namespace CollaborativeEditor.Hubs
         {
             try
             {
-                _logger.LogDebug($"SyncMessage received: roomName={roomName}, messageLength={message?.Length ?? 0}");
-                
                 if (string.IsNullOrEmpty(message))
                 {
-                    _logger.LogWarning("Empty or null message received");
                     return;
                 }
                 
@@ -94,12 +83,9 @@ namespace CollaborativeEditor.Hubs
                 });
                 
                 await Clients.OthersInGroup(roomName).SendAsync("ReceiveSyncMessage", message);
-                
-                _logger.LogDebug($"SyncMessage relayed to room {roomName}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error in SyncMessage");
                 throw;
             }
         }
@@ -110,7 +96,6 @@ namespace CollaborativeEditor.Hubs
             {
                 if (string.IsNullOrEmpty(fullStateBase64))
                 {
-                    _logger.LogWarning($"Empty state received for save in room {roomName}");
                     await Clients.Caller.SendAsync("SaveCompleted", new { roomName, success = false, error = "Empty state" });
                     return;
                 }
@@ -118,14 +103,12 @@ namespace CollaborativeEditor.Hubs
                 var fullState = Convert.FromBase64String(fullStateBase64);
                 
                 await _roomStateService.SaveRoomStateAsync(roomName, fullState);
-                _logger.LogInformation($"✓ Saved full state for room {roomName}, size: {fullState.Length} bytes");
                 
                 _roomStates[roomName] = fullState;
                 await Clients.Group(roomName).SendAsync("SaveCompleted", new { roomName, success = true, timestamp = DateTime.UtcNow });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error saving full state for room {roomName}");
                 await Clients.Caller.SendAsync("SaveCompleted", new { roomName, success = false, error = ex.Message });
             }
         }

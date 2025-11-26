@@ -11,16 +11,13 @@ public class RoomsController : ControllerBase
 {
     private readonly RoomStateService _roomStateService;
     private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
-    private readonly ILogger<RoomsController> _logger;
 
     public RoomsController(
         RoomStateService roomStateService,
-        IDbContextFactory<ApplicationDbContext> contextFactory,
-        ILogger<RoomsController> logger)
+        IDbContextFactory<ApplicationDbContext> contextFactory)
     {
         _roomStateService = roomStateService;
         _contextFactory = contextFactory;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -48,12 +45,10 @@ public class RoomsController : ControllerBase
                 }
             }
             
-            _logger.LogInformation($"Returning {rooms.Count} rooms");
             return Ok(rooms);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting rooms list");
             return StatusCode(500, new { error = ex.Message });
         }
     }
@@ -81,7 +76,6 @@ public class RoomsController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error getting room {roomName}");
             return StatusCode(500, new { error = ex.Message });
         }
     }
@@ -101,12 +95,10 @@ public class RoomsController : ControllerBase
             }
             
             await _roomStateService.DeleteRoomStateAsync(roomName);
-            _logger.LogInformation($"Deleted room: {roomName}");
             return Ok(new { message = "Room deleted successfully", roomName });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error deleting room {roomName}");
             return StatusCode(500, new { error = ex.Message });
         }
     }
@@ -117,12 +109,10 @@ public class RoomsController : ControllerBase
         try
         {
             var deletedCount = await _roomStateService.CleanupOldRoomsAsync(TimeSpan.FromDays(daysOld));
-            _logger.LogInformation($"Cleaned up {deletedCount} old rooms (older than {daysOld} days)");
             return Ok(new { message = "Cleanup completed", deletedCount, daysOld });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during cleanup");
             return StatusCode(500, new { error = ex.Message });
         }
     }
