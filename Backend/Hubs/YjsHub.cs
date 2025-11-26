@@ -83,7 +83,7 @@ namespace CollaborativeEditor.Hubs
                 
                 await Clients.OthersInGroup(roomName).SendAsync("ReceiveSyncMessage", message);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
